@@ -2,16 +2,13 @@ import csv, os
 import numpy as np
 import matplotlib.pyplot as plt
 from numpy.linalg import inv
-import random
-import math
-import sys
 
 
 def ada(X, Y, w, eta, iteration, lambdaL2):
     s_grad = np.zeros(len(X[0]))
     list_cost = []
     for i in range(iteration):
-        hypo = np.dot(X,w)
+        hypo = np.dot(X, w)
         loss = hypo - Y
         cost = np.sum(loss**2)/len(X)
         list_cost.append(cost)
@@ -36,10 +33,11 @@ def SGD(X, Y, w, eta, iteration, lambdaL2):
         w = w - eta*grad
     return w, list_cost
 
+
 def GD(X, Y, w, eta, iteration, lambdaL2):
     list_cost = []
     for i in range(iteration):
-        hypo = np.dot(X,w)
+        hypo = np.dot(X, w)
         loss = hypo - Y
         cost = np.sum(loss**2)/len(X)
         list_cost.append(cost)
@@ -49,55 +47,54 @@ def GD(X, Y, w, eta, iteration, lambdaL2):
     return w, list_cost
 
 
-
 # 每一个维度储存一种污染物的咨询
 data = []
 for i in range(18):
     data.append([])
 
-
-#read data
+# read data
 n_row = 0
-text = open('data/train.csv', 'r', encoding='big5')
+text = open('c:/Users/willia96/Desktop/机器学习/NTU_ML2017_Hung-yi-Lee_HW/HW1/data/train.csv', 'r', encoding='big5')
 row = csv.reader(text, delimiter=',')
 for r in row:
     if n_row != 0:
-        for i in range(3,27):
+        for i in range(3, 27):
             if r[i] != "NR":
                 data[(n_row-1)%18].append(float(r[i]))
             else:
                 data[(n_row-1)%18].append(float(0))
     n_row = n_row + 1
 text.close
+# data: 18*5760
 
 
-#parse data to trainX and trainY
+# parse data to trainX and trainY
 x = []
 y = []
-for i in range(12):
+for i in range(12): # 12个月
     for j in range(471):
         x.append([])
-        for t in range(18):
-            for s in range(9):
+        for t in range(18): # 18种污染物
+            for s in range(9):  # 9天
                 x[471*i + j].append(data[t][480*i+j+s])
         y.append(data[9][480*i+j+9])
-trainX = np.array(x) #每一行有9*18个数 每9个代表9天的某一种污染物
+trainX = np.array(x) # 每一行有9*18个数 每9个代表9天的某一种污染物
 trainY = np.array(y)
 
-#parse test data
+# parse test data
 test_x = []
 n_row = 0
-text = open('data/test.csv' ,"r")
-row = csv.reader(text , delimiter= ",")
+text = open('data/test.csv', "r")
+row = csv.reader(text, delimiter=",")
 
 for r in row:
     if n_row %18 == 0:
         test_x.append([])
-        for i in range(2,11):
-            test_x[n_row//18].append(float(r[i]) )
-    else :
-        for i in range(2,11):
-            if r[i] !="NR":
+        for i in range(2, 11):
+            test_x[n_row//18].append(float(r[i]))
+    else:
+        for i in range(2, 11):
+            if r[i] != "NR":
                 test_x[n_row//18].append(float(r[i]))
             else:
                 test_x[n_row//18].append(0)
@@ -105,7 +102,7 @@ for r in row:
 text.close()
 test_x = np.array(test_x)
 
-#parse anser
+# parse ans
 ans_y = []
 n_row = 0
 text = open('data/ans.csv', "r")
@@ -119,46 +116,45 @@ ans_y = np.array(list(map(int, ans_y)))
 
 
 # add bias
-test_x = np.concatenate((np.ones((test_x.shape[0],1)),test_x), axis=1)
-trainX = np.concatenate((np.ones((trainX.shape[0],1)), trainX), axis=1)
+test_x = np.concatenate((np.ones((test_x.shape[0], 1)), test_x), axis=1)
+trainX = np.concatenate((np.ones((trainX.shape[0], 1)), trainX), axis=1)
 
 
-#train data
+# train data
 w = np.zeros(len(trainX[0]))
 w_sgd, cost_list_sgd = SGD(trainX, trainY, w, eta=0.0001, iteration=20000, lambdaL2=0)
 # w_sgd50, cost_list_sgd50 = SGD(trainX, trainY, w, eta=0.0001, iteration=20000, lambdaL2=50)
 w_ada, cost_list_ada = ada(trainX, trainY, w, eta=1, iteration=20000, lambdaL2=0)
 # w_gd, cost_list_gd = SGD(trainX, trainY, w, eta=0.0001, iteration=20000, lambdaL2=0)
 
-#close form
+# close form
 w_cf = inv(trainX.T.dot(trainX)).dot(trainX.T).dot(trainY)
 cost_wcf = np.sum((trainX.dot(w_cf)-trainY)**2) / len(trainX)
 hori = [cost_wcf for i in range(20000-3)]
 
 
-
-#output testdata
+# output testdata
 y_ada = np.dot(test_x, w_ada)
 y_sgd = np.dot(test_x, w_sgd)
 y_cf = np.dot(test_x, w_cf)
 
-#csv format
+# csv format
 ans = []
 for i in range(len(test_x)):
     ans.append(["id_"+str(i)])
-    a = np.dot(w_ada,test_x[i])
+    a = np.dot(w_ada, test_x[i])
     ans[i].append(a)
 
 filename = "result/predict.csv"
 text = open(filename, "w+")
-s = csv.writer(text,delimiter=',',lineterminator='\n')
-s.writerow(["id","value"])
+s = csv.writer(text,delimiter=',', lineterminator='\n')
+s.writerow(["id", "value"])
 for i in range(len(ans)):
     s.writerow(ans[i])
 text.close()
 
 
-#plot training data with different gradiant method
+# plot training data with different gradiant method
 plt.plot(np.arange(len(cost_list_ada[3:])), cost_list_ada[3:], 'b', label="ada")
 plt.plot(np.arange(len(cost_list_sgd[3:])), cost_list_sgd[3:], 'g', label='sgd')
 # plt.plot(np.arange(len(cost_list_sgd50[3:])), cost_list_sgd50[3:], 'c', label='sgd50')
@@ -171,7 +167,7 @@ plt.legend()
 plt.savefig(os.path.join(os.path.dirname(__file__), "figures/TrainProcess"))
 plt.show()
 
-#plot fianl answer
+# plot final answer
 plt.figure()
 plt.subplot(131)
 plt.title('CloseForm')

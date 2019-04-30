@@ -3,13 +3,13 @@
 
 
 
-- **Q1 矩阵运算**   
-   
-  读取matrixA.txt and matrixB.txt   
-   
-  进行矩阵乘法运算    
+- **Q1 矩阵运算**
+
+  读取matrixA.txt and matrixB.txt
+
+  进行矩阵乘法运算
      
-  由大到小排序后输出   
+  由大到小排序后输出
      
   numpy   
   

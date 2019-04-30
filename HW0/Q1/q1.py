@@ -6,8 +6,11 @@ with open("data/matrixA.txt", "r") as lines:
 
 with open("data/matrixB.txt", "r") as lines:
     matrixB = lines.readlines()
+    print(matrixB)
     matrixB = [line.strip() for line in matrixB]
+    print(matrixB)
     matrixB = [list(map(int, line.split(','))) for line in matrixB]
+    print(matrixB)
 
 A = np.array(matrixA)
 B = np.array(matrixB)
